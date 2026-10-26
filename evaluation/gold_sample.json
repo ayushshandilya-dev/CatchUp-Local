@@ -1,0 +1,40 @@
+{
+  "description": "Hand-labelled core material items in examples/sample_chat.txt. Alternates are duplicate or equivalent messages; matching any one counts. This is a small product-quality set, not a benchmark.",
+  "decisions": [
+    {"name": "Initial venue choice", "ids": ["m0023", "m0024", "m0033"]},
+    {"name": "Priya calls the admin office", "ids": ["m0090", "m0091"]}
+  ],
+  "actions": [
+    {"name": "Send sponsor deck by Friday 6pm", "ids": ["m0012", "m0013"]},
+    {"name": "Finish poster by Thursday evening", "ids": ["m0016", "m0063"]},
+    {"name": "Ask canteen for an 80-person quote", "ids": ["m0072", "m0073"]},
+    {"name": "Book projector by tomorrow", "ids": ["m0076"]},
+    {"name": "Forward projector request to Sameer", "ids": ["m0078"]},
+    {"name": "Meera covers 8am desk", "ids": ["m0080", "m0082"]},
+    {"name": "Ananya covers second shift", "ids": ["m0081"]},
+    {"name": "Put 11k catering in the deck", "ids": ["m0098"]},
+    {"name": "Meera follows up with IT today", "ids": ["m0101"]},
+    {"name": "Send poster to Priya by Thursday evening", "ids": ["m0103"]},
+    {"name": "Priya calls admin at 10", "ids": ["m0106"]},
+    {"name": "Hold off printing the schedule", "ids": ["m0110"]}
+  ],
+  "questions": [
+    {"name": "Auditorium WiFi password still unconfirmed", "ids": ["m0099", "m0075", "m0041"]},
+    {"name": "Venue still unresolved", "ids": ["m0054", "m0088", "m0106"]},
+    {"name": "Move the whole fest to Sunday?", "ids": ["m0107"]}
+  ],
+  "updates": [
+    {"name": "Community hall closed on Saturday", "ids": ["m0046"]},
+    {"name": "Library auditorium free Saturday", "ids": ["m0050"]},
+    {"name": "Library closes at 6pm", "ids": ["m0051"]},
+    {"name": "Budget is 18k + 6k", "ids": ["m0064"]},
+    {"name": "80-person canteen quote is 11k", "ids": ["m0096"]},
+    {"name": "Poster date fixed to 24th", "ids": ["m0102"]},
+    {"name": "Sponsor deck hard deadline Friday 6pm", "ids": ["m0086"]},
+    {"name": "Venue decision deferred until Priya talks to admin", "ids": ["m0109"]}
+  ],
+  "conflicts": [
+    {"name": "Hall booked vs hall closed", "ids": ["m0023", "m0046"]},
+    {"name": "Library free vs library closes early", "ids": ["m0050", "m0051"]}
+  ]
+}

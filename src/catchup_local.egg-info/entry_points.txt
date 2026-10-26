@@ -1,0 +1,2 @@
+[console_scripts]
+catchup-local = catchup_local.cli:main

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CatchUp Local — your group chat, caught up</title>
+  <meta name="description" content="Turn a WhatsApp export into an evidence-backed briefing with a local open-weight model. Every claim links back to the message it came from.">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="page-glow" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="CatchUp Local home">
+      <span class="brand-mark" aria-hidden="true">◒</span>
+      <span>CatchUp <strong>Local</strong></span>
+    </a>
+    <nav class="header-nav">
+      <span id="modelBadge" class="model-badge is-loading">Checking local model…</span>
+      <a href="#how">How it works</a>
+      <a href="#limits">Limits</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Hacktoberfest 2026 · Week 3 · Slow and Steady</p>
+      <h1>Your group chat,<br><em>caught up.</em></h1>
+      <p class="lede">A WhatsApp export becomes a briefing you can verify. Every decision, task and open question links to the exact message it came from — and the model runs on your laptop.</p>
+
+      <div class="hero-grid">
+        <div class="upload-card">
+          <label id="dropzone" class="dropzone" for="fileInput">
+            <input id="fileInput" type="file" accept=".txt,.text,text/plain" hidden>
+            <span class="drop-icon" aria-hidden="true">↥</span>
+            <span class="drop-title">Drop your WhatsApp export here</span>
+            <span class="drop-sub">or choose a <code>.txt</code> file · up to 8 MB</span>
+          </label>
+          <div class="hero-actions">
+            <button id="sampleBtn" class="button primary" type="button">Show the sample briefing</button>
+            <button id="liveSampleBtn" class="button ghost" type="button">Run the sample live</button>
+          </div>
+          <p class="hint">The sample is precomputed for an instant look. A live run on this 8 GB laptop takes several minutes — the progress bar is honest about every batch.</p>
+        </div>
+
+        <aside class="promise-card" aria-label="What this tool promises">
+          <p class="promise-kicker">The rules</p>
+          <ul class="promise-list">
+            <li><span class="promise-num">01</span><div><strong>Evidence or nothing.</strong><p>Claims without a message behind them are refused, not smoothed over.</p></div></li>
+            <li><span class="promise-num">02</span><div><strong>Local by construction.</strong><p>Loopback Ollama only. No cloud fallback, no telemetry, no stored chat.</p></div></li>
+            <li><span class="promise-num">03</span><div><strong>Honest about limits.</strong><p>Owners and deadlines are grounded. Uncertainty stays visible.</p></div></li>
+          </ul>
+          <div class="privacy-stamp"><span aria-hidden="true">⌂</span> Nothing leaves this machine</div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="progressPanel" class="panel progress-panel is-hidden" aria-live="polite">
+      <div class="progress-top">
+        <div>
+          <p class="eyebrow">Working locally</p>
+          <h2 id="progressTitle">Reading your chat…</h2>
+        </div>
+        <span id="progressCount" class="progress-count">0 / 1</span>
+      </div>
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressTrack">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <p id="progressNote" class="progress-note">Messages are parsed on this machine. Chat text is never written to logs.</p>
+      <div id="progressError" class="progress-error is-hidden" role="alert">
+        <strong>Analysis stopped.</strong>
+        <p id="progressErrorText"></p>
+        <button id="retryBtn" class="button small ghost" type="button">Try again</button>
+      </div>
+    </section>
+
+    <section id="result" class="result is-hidden" aria-live="polite">
+      <div class="result-head">
+        <div>
+          <p id="resultMeta" class="eyebrow">Briefing</p>
+          <h2>The short version</h2>
+        </div>
+        <div class="result-actions">
+          <button id="downloadBtn" class="button small ghost" type="button">Download JSON</button>
+          <button id="resetBtn" class="button small primary" type="button">New chat</button>
+        </div>
+      </div>
+
+      <article class="summary-card">
+        <p id="summaryText" class="summary-text"></p>
+        <div id="summaryEvidence" class="evidence-row" aria-label="Summary sources"></div>
+        <p id="summaryKind" class="summary-kind"></p>
+      </article>
+
+      <div id="warningBanner" class="warning-banner is-hidden" role="status"></div>
+
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <p class="eyebrow">Start here</p>
+            <h3>Read these first</h3>
+          </div>
+          <p class="block-note">Chosen because they carry a deadline, a conflict or an open question.</p>
+        </div>
+        <div id="readFirstList" class="read-grid"></div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <div><p class="eyebrow">Settled</p><h3>Decisions <span id="decisionCount" class="count">0</span></h3></div>
+        </div>
+        <div id="decisionList" class="item-list"></div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <div><p class="eyebrow">On the hook</p><h3>Action items <span id="actionCount" class="count">0</span></h3></div>
+          <p class="block-note">Owners and deadlines appear only when the cited message states them.</p>
+        </div>
+        <div id="actionList" class="item-grid"></div>
+      </section>
+
+      <div class="split">
+        <section class="block">
+          <div class="block-head">
+            <div><p class="eyebrow">Not settled</p><h3>Open questions <span id="questionCount" class="count">0</span></h3></div>
+          </div>
+          <div id="questionList" class="item-list"></div>
+        </section>
+        <section class="block">
+          <div class="block-head">
+            <div><p class="eyebrow">Worth knowing</p><h3>Updates <span id="updateCount" class="count">0</span></h3></div>
+          </div>
+          <div id="updateList" class="item-list"></div>
+        </section>
+      </div>
+
+      <section class="block trace-block">
+        <div class="block-head">
+          <div><p class="eyebrow">The receipts</p><h3>Evidence trace</h3></div>
+          <button id="toggleTrace" class="button small ghost" type="button" aria-expanded="true">Hide details</button>
+        </div>
+        <div id="traceContent">
+          <div id="coverageGrid" class="coverage-grid"></div>
+          <div class="trace-columns">
+            <div>
+              <h4>Refused by validation</h4>
+              <div id="refusedList" class="trace-list"></div>
+            </div>
+            <div>
+              <h4>Run notes</h4>
+              <div id="runNotes" class="trace-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="how" class="how">
+      <p class="eyebrow">How it works</p>
+      <h2>Slow on purpose.</h2>
+      <div class="how-grid">
+        <article><span>1</span><h3>Parse deterministically</h3><p>Timestamps, senders, replies, media, edits and unparsed lines are handled by code — not guessed by a language model.</p></article>
+        <article><span>2</span><h3>Let the model triage</h3><p>A small local model reviews candidate messages in fixed-size batches. Its only output is a label and, for tasks, a grounded owner and deadline.</p></article>
+        <article><span>3</span><h3>Validate every claim</h3><p>Items keep their source message. Ungrounded details are replaced with “unknown”. Adjacent duplicates merge; conflicts stay split.</p></article>
+        <article><span>4</span><h3>Show the seams</h3><p>Counts, warnings, refused claims and the original transcript are visible. If a batch fails, it is labelled as untriaged.</p></article>
+      </div>
+    </section>
+
+    <section id="limits" class="limits">
+      <div>
+        <p class="eyebrow">What this cannot do</p>
+        <h2>Small model. Real limits.</h2>
+      </div>
+      <ul>
+        <li>It reads a chat export, not your live WhatsApp. Forwarded context and replies outside the export are invisible.</li>
+        <li>A 1–2B local model can still pick the wrong label. Evidence links let you check; they do not make the label infallible.</li>
+        <li>Owners and deadlines are conservative. “unknown” is a feature when the message does not say.</li>
+        <li>No winner is chosen in a disagreement. Both sides are shown with their sources.</li>
+        <li>Speed depends on your CPU. On an 8 GB Intel laptop, a full sample run is minutes, not seconds.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Built for the DEV Hacktoberfest 2026 Week 3 “Slow and Steady” challenge. MIT licensed.</p>
+    <p class="footer-small">Your chat stays in this browser tab and this process's memory. Closing the tab or restarting the server removes the job.</p>
+  </footer>
+
+  <div id="drawerBackdrop" class="drawer-backdrop is-hidden"></div>
+  <aside id="drawer" class="drawer" aria-hidden="true" aria-label="Source message">
+    <div class="drawer-head">
+      <div><p class="eyebrow">Source message</p><h3 id="drawerSender">—</h3></div>
+      <button id="drawerClose" class="icon-button" type="button" aria-label="Close source message">×</button>
+    </div>
+    <p id="drawerTime" class="drawer-time"></p>
+    <blockquote id="drawerText" class="drawer-quote"></blockquote>
+    <div id="drawerFlags" class="drawer-flags"></div>
+    <p id="drawerLine" class="drawer-line"></p>
+    <p class="drawer-note">This is the exact text used as evidence. The tool does not paraphrase evidence.</p>
+  </aside>
+
+  <div id="toast" class="toast is-hidden" role="status"></div>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
